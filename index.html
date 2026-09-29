@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduMaster BD — HSC & NU Honours Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="logo" onclick="showSection('home')" style="cursor:pointer;">
+            <span class="logo-icon">📚</span>
+            <h2>EduMaster BD</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="handleUserAction(() => showSection('home'))">হোম</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('curriculum'))">কারিকুলাম</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('study'))">পড়াশোনা</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('mcq'))">নৈর্ব্যক্তিক</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('knowledge'))">জ্ঞানমূলক</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('cq'))">সৃজনশীল</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('tracker'))">ট্র্যাকার</a></li>
+                <li><a href="#" onclick="handleUserAction(() => showSection('gpa'))">GPA/CGPA</a></li>
+                <li><a href="#" onclick="showSection('qbank')" class="admin-link">🔒 Admin Panel</a></li>
+            </ul>
+        </nav>
+        <div id="user-nav-status" class="user-status-tag"></div>
+    </header>
+
+    <!-- Student Registration Modal -->
+    <div id="reg-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2>🎓 বিনামূল্যে ৫ বার ব্যবহারের সীমা শেষ!</h2>
+            <p class="text-muted">ওয়েবসাইটের পড়ালেখা, নৈর্ব্যক্তিক ও পরীক্ষা চালিয়ে যেতে অ্যাকাউন্ট খুলুন।</p>
+            <form id="student-reg-form" onsubmit="registerStudent(event)">
+                <div class="form-group">
+                    <label>পূর্ণ নাম:</label>
+                    <input type="text" id="reg-name" required placeholder="আপনার নাম লিখুন">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>শ্রেণী:</label>
+                        <select id="reg-class" required>
+                            <option value="HSC 1st Year">HSC ১ম বর্ষ</option>
+                            <option value="HSC 2nd Year">HSC ২য় বর্ষ</option>
+                            <option value="Honours">Honours</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>রোল নম্বর:</label>
+                        <input type="number" id="reg-roll" required placeholder="যেমন: ১০১">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>লিঙ্গ (Gender):</label>
+                    <select id="reg-gender" required>
+                        <option value="পুরুষ">পুরুষ</option>
+                        <option value="মহিলা">মহিলা</option>
+                        <option value="অন্যান্য">অন্যান্য</option>
+                    </select>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>ইউজারনেম (Login ID):</label>
+                        <input type="text" id="reg-username" required placeholder="যেমন: rahim123">
+                    </div>
+                    <div class="form-group">
+                        <label>পাসওয়ার্ড:</label>
+                        <input type="password" id="reg-password" required placeholder="******">
+                    </div>
+                </div>
+                <p class="text-danger-sm">* পাসওয়ার্ড ভুলে গেলে রিকভার করা যাবে না, নতুন আইডি তৈরি করতে হবে।</p>
+                <button type="submit" class="btn btn-blue style-full">নিবন্ধন করুন (Register)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="container">
+
+        <!-- 1. HERO & HOME SECTION -->
+        <section id="home-section" class="page-section">
+            <div class="hero-banner">
+                <span class="badge">HSC • NU Honours • Live Feed Ready</span>
+                <h1>তোমার সম্পূর্ণ শিক্ষা প্ল্যাটফর্ম</h1>
+                <p>HSC Science, Humanities, Business Studies এবং Honours Management-এর অনলাইন প্রশ্ন ব্যাংক ও পরীক্ষা কেন্দ্র।</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-outline" onclick="handleUserAction(() => showSection('curriculum'))">কারিকুলাম দেখুন</button>
+                    <button class="btn btn-solid" onclick="handleUserAction(() => showSection('study'))">পড়া শুরু করুন</button>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <h2>🎓 বিভাগ নির্বাচন</h2>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>HSC Science</h3>
+                    <p class="text-muted">বিজ্ঞান বিভাগ (পদার্থ, রসায়ন, উচ্চতর গণিত, জীববিজ্ঞান)</p>
+                    <button class="btn btn-blue" onclick="handleUserAction(() => selectDepartment('HSC Science'))">দেখুন</button>
+                </div>
+                <div class="card">
+                    <h3>HSC Humanities</h3>
+                    <p class="text-muted">মানবিক বিভাগ (পৌরনীতি, অর্থনীতি, যুক্তিবিদ্যা, ইতিহাস)</p>
+                    <button class="btn btn-blue" onclick="handleUserAction(() => selectDepartment('HSC Humanities'))">দেখুন</button>
+                </div>
+                <div class="card">
+                    <h3>HSC Business Studies</h3>
+                    <p class="text-muted">ব্যবসায় শিক্ষা (হিসাববিজ্ঞান, ফিন্যান্স, ব্যবসায় সংগঠন)</p>
+                    <button class="btn btn-blue" onclick="handleUserAction(() => selectDepartment('HSC Business Studies'))">দেখুন</button>
+                </div>
+                <div class="card">
+                    <h3>NU Honours Management</h3>
+                    <p class="text-muted">ম্যানেজমেন্ট বিভাগ (১ম – ৪র্থ বর্ষের সকল বিষয়)</p>
+                    <button class="btn btn-blue" onclick="handleUserAction(() => selectDepartment('NU Honours Management'))">দেখুন</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. CURRICULUM SECTION -->
+        <section id="curriculum-section" class="page-section hidden">
+            <h2 id="selected-dept-title" class="page-header">HSC Science</h2>
+            <p class="text-muted">বিষয় নির্বাচন করে সরাসরি পড়ালেখা ও প্রশ্ন ব্যাংকে চলে যান:</p>
+            <div class="card-grid-4" id="subject-cards-container"></div>
+        </section>
+
+        <!-- 3. STUDY & EXAM SECTION -->
+        <section id="study-section" class="page-section hidden">
+            <div class="section-card">
+                <h2>📖 Study & Exam Panel</h2>
+                <div class="form-group">
+                    <label>বিভাগ সিলেক্ট করুন:</label>
+                    <select id="dept-select" onchange="onDeptChange()">
+                        <option value="HSC Science">HSC Science</option>
+                        <option value="HSC Humanities">HSC Humanities</option>
+                        <option value="HSC Business Studies">HSC Business Studies</option>
+                        <option value="NU Honours Management">NU Honours Management</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>বই/বিষয় সিলেক্ট করুন:</label>
+                    <select id="subject-select"></select>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-blue" onclick="handleUserAction(startReading)">■ পড়া শুরু (সৃজনশীল ও জ্ঞানমূলক)</button>
+                    <button class="btn btn-outline-pink" onclick="handleUserAction(startExam)">🧪 পরীক্ষা শুরু (নৈর্ব্যক্তিক)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. MCQ SECTION -->
+        <section id="mcq-section" class="page-section hidden">
+            <div class="section-card">
+                <div class="flex-header">
+                    <h2>📝 লাইভ নৈর্ব্যক্তিক (MCQ) ফিড</h2>
+                    <span id="current-subject-tag" class="tag-badge">সকল বিষয়</span>
+                </div>
+                <div id="mcq-container"></div>
+                <div class="action-buttons" style="margin-top:20px;">
+                    <button class="btn btn-blue" onclick="submitMCQExam()">উত্তর যাচাই করুন</button>
+                </div>
+                <div id="mcq-score-card" class="result-text hidden"></div>
+            </div>
+        </section>
+
+        <!-- 5. KNOWLEDGE SECTION -->
+        <section id="knowledge-section" class="page-section hidden">
+            <div class="section-card">
+                <div class="flex-header">
+                    <h2>💡 জ্ঞানমূলক (ক-প্রশ্ন) ব্যাংক</h2>
+                    <span id="knowledge-subject-tag" class="tag-badge">সকল বিষয়</span>
+                </div>
+                <div id="knowledge-list"></div>
+            </div>
+        </section>
+
+        <!-- 6. CQ SECTION -->
+        <section id="cq-section" class="page-section hidden">
+            <div class="section-card">
+                <div class="flex-header">
+                    <h2>📄 সৃজনশীল (CQ) প্রশ্ন ব্যাংক</h2>
+                    <span id="cq-subject-tag" class="tag-badge">সকল বিষয়</span>
+                </div>
+                <div id="cq-list"></div>
+            </div>
+        </section>
+
+        <!-- 7. PROGRESS TRACKER SECTION -->
+        <section id="tracker-section" class="page-section hidden">
+            <h2>📊 Progress Tracker</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <p class="stat-title">সম্পন্ন অধ্যায়</p>
+                    <h1 class="stat-value text-blue" id="stat-completed-chapters">0</h1>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-title">মোট পোস্টকৃত প্রশ্ন</p>
+                    <h1 class="stat-value text-blue" id="stat-total-q">0</h1>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-title">সফল পরীক্ষা</p>
+                    <h1 class="stat-value text-blue" id="stat-passed-exams">0</h1>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. GPA / CGPA CALCULATOR SECTION -->
+        <section id="gpa-section" class="page-section hidden">
+            <h2>🧮 Academic Tools</h2>
+            <div class="calculator-grid">
+                <div class="card">
+                    <h3>GPA Calculator</h3>
+                    <div class="form-group">
+                        <label>গ্রেডগুলো কমা দিয়ে লিখুন</label>
+                        <input type="text" id="gpa-input" placeholder="A+, A, A-, B+">
+                    </div>
+                    <button class="btn btn-blue" onclick="calculateGPA()">GPA হিসাব</button>
+                    <p class="result-text" id="gpa-result"></p>
+                </div>
+                <div class="card">
+                    <h3>CGPA Calculator</h3>
+                    <div class="form-group">
+                        <label>GPA ও Credit লিখুন (প্রতি লাইনে GPA, Credit)</label>
+                        <textarea id="cgpa-input" rows="3" placeholder="3.50, 4&#10;3.75, 4"></textarea>
+                    </div>
+                    <button class="btn btn-blue" onclick="calculateCGPA()">CGPA হিসাব</button>
+                    <p class="result-text" id="cgpa-result"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. ADMIN PANEL SECTION -->
+        <section id="qbank-section" class="page-section hidden">
+            
+            <!-- Login Box for Admin -->
+            <div id="admin-login-box" class="section-card login-card text-center">
+                <h2>🔐 Admin Security Login</h2>
+                <p class="text-muted">অ্যাডমিন নাম সিলেক্ট করে পাসওয়ার্ড দিন (সর্বোচ্চ ৪ বার ভুল করা যাবে)</p>
+                
+                <div class="form-group" style="max-width: 350px; margin: 15px auto;">
+                    <label>অ্যাডমিন সিলেক্ট করুন:</label>
+                    <select id="admin-name-select">
+                        <option value="নাহিদুল ইসলাম">১. নাহিদুল ইসলাম</option>
+                        <option value="নাফচিন">২. নাফচিন</option>
+                        <option value="নাইম উদ্দিন">৩. নাইম উদ্দিন</option>
+                    </select>
+                </div>
+                <div class="form-group" style="max-width: 350px; margin: 15px auto;">
+                    <label>পাসওয়ার্ড:</label>
+                    <input type="password" id="admin-pass-input" placeholder="পাসওয়ার্ড লিখুন">
+                </div>
+                <button class="btn btn-blue" id="admin-login-btn" onclick="checkAdminLogin()">Login</button>
+                <p id="login-error" class="text-danger hidden" style="color: red; margin-top: 10px;"></p>
+            </div>
+
+            <!-- Blocked Message Box -->
+            <div id="admin-blocked-box" class="section-card login-card text-center hidden">
+                <h2 style="color: red;">❌ Admin Login Blocked!</h2>
+                <p>এডমিন পাসওয়ার্ড সর্বোচ্চ ৪ বার ভুল দেওয়ার কারণে এডমিন প্যানেলটি ব্লক করা হয়েছে।</p>
+            </div>
+
+            <!-- Admin Main Dashboard -->
+            <div id="admin-dashboard" class="hidden">
+                <div class="admin-header">
+                    <div>
+                        <h2>⚙️ অ্যাডমিন কন্ট্রোল প্যানেল</h2>
+                        <p>বর্তমান অ্যাডমিন: <strong id="admin-display-name">নাহিদুল ইসলাম</strong></p>
+                    </div>
+                    <button class="btn btn-danger-outline" onclick="adminLogout()">Logout</button>
+                </div>
+
+                <!-- Post Publisher -->
+                <div class="fb-post-box">
+                    <div class="fb-header">
+                        <div class="admin-avatar">👨‍‍🏫</div>
+                        <div>
+                            <h4 style="margin:0;" id="post-author-name">এডমিন</h4>
+                            <p class="text-muted" style="margin:0; font-size:0.8rem;">পোস্ট করার সাথে সাথেই রিয়েল-টাইমে আপডেট হবে</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-2" style="margin-top: 15px;">
+                        <div class="form-group">
+                            <label>বিভাগ নির্বাচন করুন:</label>
+                            <select id="post-dept-select" onchange="onAdminDeptChange()">
+                                <option value="HSC Science">HSC Science</option>
+                                <option value="HSC Humanities">HSC Humanities</option>
+                                <option value="HSC Business Studies">HSC Business Studies</option>
+                                <option value="NU Honours Management">NU Honours Management</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>বিষয় নির্বাচন করুন:</label>
+                            <select id="post-subject-select"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ক্যাটাগরি নির্বাচন করুন:</label>
+                        <select id="post-type-select" onchange="togglePostFormFields()">
+                            <option value="cq">সৃজনশীল (CQ)</option>
+                            <option value="knowledge">জ্ঞানমূলক (ক-প্রশ্ন)</option>
+                            <option value="mcq">নৈর্ব্যক্তিক (MCQ)</option>
+                        </select>
+                    </div>
+
+                    <!-- CQ Form -->
+                    <div id="form-fields-cq">
+                        <div class="form-group">
+                            <label>উদ্দীপক (Stem):</label>
+                            <textarea id="cq-stem-text" rows="3" placeholder="উদ্দীপক লিখুন..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>প্রশ্ন ও উত্তরসমূহ (ফরম্যাট অনুযায়ী লিখুন):</label>
+                            <textarea id="cq-qa-full" rows="6" placeholder="১. রাহাত প্রতিদিন সময়মতো বিদ্যালয়ে যায়—এটি কোন গুণের পরিচয়?&#10;উত্তর: এটি নিয়মানুবর্তিতার পরিচয়।&#10;২. রাহাত শিক্ষকদের কীভাবে সম্মান করে?&#10;উত্তর: রাহাত শিক্ষকদের প্রতি শ্রদ্ধাশীল আচরণ করে..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Knowledge Form -->
+                    <div id="form-fields-knowledge" class="hidden">
+                        <div class="form-group">
+                            <label>প্রশ্ন ও উত্তরসমূহ (একাধিক একসাথে দিতে পারেন):</label>
+                            <textarea id="k-qa-full" rows="8" placeholder="প্রশ্ন: নিয়মানুবর্তিতা কী?&#10;উত্তর: নিয়ম মেনে চলার অভ্যাসকে নিয়মানুবর্তিতা বলে।&#10;&#10;প্রশ্ন: রাহাত কেমন ছাত্র?&#10;উত্তর: রাহাত একজন নিয়মিত ছাত্র।"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- MCQ Form -->
+                    <div id="form-fields-mcq" class="hidden">
+                        <div class="form-group">
+                            <label>নৈর্ব্যক্তিক প্রশ্নমালা ও উত্তর (উদাহরণ অনুযায়ী পেস্ট করুন):</label>
+                            <textarea id="mcq-bulk-text" rows="10" placeholder="১. রাহাত কেমন ছাত্র?&#10;ক) অলস&#10;খ) নিয়মিত&#10;গ) অমনোযোগী&#10;ঘ) অবাধ্য&#10;উত্তর: খ) নিয়মিত"></textarea>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-blue" style="width: 100%; margin-top: 15px;" onclick="publishPost()">🚀 প্রকাশ করুন (Live Publish)</button>
+                </div>
+
+                <!-- Admin Manage Posts Section -->
+                <div class="section-card" style="margin-bottom: 20px;">
+                    <h3>📂 পোস্ট ব্যবস্থাপনা ও ডিলিট অপশন</h3>
+                    <p class="text-muted">আপনার বা অন্যান্য এডমিনের প্রকাশিত প্রশ্নসমূহ প্রয়োজন অনুযায়ী ডিলিট করুন:</p>
+                    <div id="admin-posts-container"></div>
+                </div>
+
+                <!-- Student List View -->
+                <div class="section-card">
+                    <h3>👥 নিবন্ধিত শিক্ষার্থীদের তালিকা</h3>
+                    <div style="overflow-x:auto;">
+                        <table class="styled-table" id="students-table">
+                            <thead>
+                                <tr>
+                                    <th>নাম</th>
+                                    <th>শ্রেণী</th>
+                                    <th>রোল</th>
+                                    <th>লিঙ্গ</th>
+                                    <th>ইউজারনেম</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>EduMaster BD • Multi-Admin System</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
