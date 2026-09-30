@@ -1,10 +1,23 @@
+// Firebase Configuration Setup
+const firebaseConfig = {
+apiKey: "AIzaSyDC1OdlhgdiU8GFFonoZ1zDRvs2eTdR4dM",
+  authDomain: "edumaster-bd.firebaseapp.com",
+  databaseURL: "https://edumaster-bd-default-rtdb.firebaseio.com",
+  projectId: "edumaster-bd",
+  storageBucket: "edumaster-bd.firebasestorage.app",
+  messagingSenderId: "1022372537935",
+  appId: "1:1022372537935:web:fcc6f205ef11563c5f2c3a",
+  measurementId: "G-Q6VQEV4RY4"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
 
 // Local Storage Keys
 const APP_KEYS = {
-    MCQ: 'edumaster_mcqs',
-    KNOWLEDGE: 'edumaster_knowledge',
-    CQ: 'edumaster_cq',
-    USERS: 'edumaster_students',
     USAGE: 'edumaster_usage_count',
     CURRENT_USER: 'edumaster_curr_user',
     ADMIN_ATTEMPTS: 'edumaster_admin_attempts',
@@ -44,41 +57,12 @@ const SUBJECTS_DATA = {
     ]
 };
 
-// Initial Data
-let mcqData = JSON.parse(localStorage.getItem(APP_KEYS.MCQ)) || [
-    {
-        dept: "HSC Humanities",
-        subject: "বাংলা ১ম পত্র",
-        question: "১. রাহাত কেমন ছাত্র?",
-        options: ["ক) অলস", "খ) নিয়মিত", "গ) অমনোযোগী", "ঘ) অবাধ্য"],
-        answer: "খ) নিয়মিত"
-    }
-];
+// Global Arrays connected to Firebase
+let mcqData = [];
+let knowledgeQuestions = [];
+let cqData = [];
+let registeredStudents = [];
 
-let knowledgeQuestions = JSON.parse(localStorage.getItem(APP_KEYS.KNOWLEDGE)) || [
-    {
-        dept: "HSC Humanities",
-        subject: "বাংলা ১ম পত্র",
-        q: "প্রশ্ন: নিয়মানুবর্তিতা কী?",
-        a: "উত্তর: নিয়ম মেনে চলার অভ্যাসকে নিয়মানুবর্তিতা বলে।"
-    }
-];
-
-let cqData = JSON.parse(localStorage.getItem(APP_KEYS.CQ)) || [
-    {
-        dept: "HSC Humanities",
-        subject: "বাংলা ১ম পত্র",
-        stem: "রাহাত একজন নিয়মিত ছাত্র। সে প্রতিদিন সময়মতো বিদ্যালয়ে যায়, শিক্ষকদের সম্মান করে এবং মনোযোগ দিয়ে পড়াশোনা করে। অবসর সময়ে সে বন্ধুদের পড়াশোনায় সাহায্য করে। সে মনে করে, নিয়মানুবর্তিতা ও পরিশ্রমই জীবনে সফলতার মূল চাবিকাঠি।",
-        qaList: [
-            "১. রাহাত প্রতিদিন সময়মতো বিদ্যালয়ে যায়—এটি কোন গুণের পরিচয়?\nউত্তর: এটি নিয়মানুবর্তিতার পরিচয়।",
-            "২. রাহাত শিক্ষকদের কীভাবে সম্মান করে?\nউত্তর: রাহাত শিক্ষকদের প্রতি শ্রদ্ধাশীল আচরণ করে এবং তাঁদের কথা মনোযোগ দিয়ে শোনে।",
-            "৩. রাহাত অবসর সময়ে কী করে?\nউত্তর: রাহাত অবসর সময়ে বন্ধুদের পড়াশোনায় সাহায্য করে।",
-            "৪. উদ্দীপকটির মূল বক্তব্য কী?\nউত্তর: উদ্দীপকটির মূল বক্তব্য হলো—নিয়মানুবর্তিতা, পরিশ্রম ও অন্যকে সহযোগিতা করার মাধ্যমে জীবনে সফলতা অর্জন করা যায়।"
-        ]
-    }
-];
-
-let registeredStudents = JSON.parse(localStorage.getItem(APP_KEYS.USERS)) || [];
 let usageCount = parseInt(localStorage.getItem(APP_KEYS.USAGE)) || 0;
 let currentUser = JSON.parse(localStorage.getItem(APP_KEYS.CURRENT_USER)) || null;
 
@@ -93,7 +77,38 @@ window.onload = function() {
     onDeptChange();
     onAdminDeptChange();
     checkAdminBlockState();
+    listenToFirebaseData();
 };
+
+// Listen to Firebase Realtime Database
+function listenToFirebaseData() {
+    db.ref('mcqs').on('value', snapshot => {
+        const data = snapshot.val();
+        mcqData = data ? Object.keys(data).map(key => ({ fbKey: key, ...data[key] })) : [];
+        renderMCQList();
+        renderAdminManagePosts();
+    });
+
+    db.ref('knowledge').on('value', snapshot => {
+        const data = snapshot.val();
+        knowledgeQuestions = data ? Object.keys(data).map(key => ({ fbKey: key, ...data[key] })) : [];
+        renderKnowledgeList();
+        renderAdminManagePosts();
+    });
+
+    db.ref('cq').on('value', snapshot => {
+        const data = snapshot.val();
+        cqData = data ? Object.keys(data).map(key => ({ fbKey: key, ...data[key] })) : [];
+        renderCQList();
+        renderAdminManagePosts();
+    });
+
+    db.ref('students').on('value', snapshot => {
+        const data = snapshot.val();
+        registeredStudents = data ? Object.values(data) : [];
+        renderStudentTable();
+    });
+}
 
 function checkAdminBlockState() {
     if (isAdminBlocked) {
@@ -129,9 +144,8 @@ function registerStudent(e) {
         pass: document.getElementById('reg-password').value
     };
 
-    registeredStudents.push(newUser);
-    localStorage.setItem(APP_KEYS.USERS, JSON.stringify(registeredStudents));
-    
+    db.ref('students').push(newUser);
+
     currentUser = newUser;
     localStorage.setItem(APP_KEYS.CURRENT_USER, JSON.stringify(currentUser));
 
@@ -214,7 +228,10 @@ function startExam() {
 // Render Questions
 function renderMCQList() {
     const container = document.getElementById('mcq-container');
-    document.getElementById('current-subject-tag').innerText = activeSelectedSubject;
+    const tag = document.getElementById('current-subject-tag');
+    if (tag) tag.innerText = activeSelectedSubject;
+    if (!container) return;
+
     container.innerHTML = '';
 
     const filtered = activeSelectedSubject === "সকল বিষয়" ? mcqData : mcqData.filter(x => x.subject === activeSelectedSubject);
@@ -226,9 +243,11 @@ function renderMCQList() {
 
     filtered.forEach((q, idx) => {
         let optsHtml = '';
-        q.options.forEach(opt => {
-            optsHtml += `<label style="display:block; margin:4px 0;"><input type="radio" name="mcq_${idx}" value="${opt}"> ${opt}</label>`;
-        });
+        if(q.options) {
+            q.options.forEach(opt => {
+                optsHtml += `<label style="display:block; margin:4px 0;"><input type="radio" name="mcq_${idx}" value="${opt}"> ${opt}</label>`;
+            });
+        }
 
         container.innerHTML += `
             <div class="q-item" id="mcq_card_${idx}">
@@ -242,7 +261,6 @@ function renderMCQList() {
     });
 }
 
-// Updated Exam Feedback System
 function submitMCQExam() {
     let score = 0;
     const filtered = activeSelectedSubject === "সকল বিষয়" ? mcqData : mcqData.filter(x => x.subject === activeSelectedSubject);
@@ -280,7 +298,10 @@ function submitMCQExam() {
 
 function renderKnowledgeList() {
     const container = document.getElementById('knowledge-list');
-    document.getElementById('knowledge-subject-tag').innerText = activeSelectedSubject;
+    const tag = document.getElementById('knowledge-subject-tag');
+    if (tag) tag.innerText = activeSelectedSubject;
+    if (!container) return;
+
     container.innerHTML = '';
 
     const filtered = activeSelectedSubject === "সকল বিষয়" ? knowledgeQuestions : knowledgeQuestions.filter(x => x.subject === activeSelectedSubject);
@@ -303,7 +324,10 @@ function renderKnowledgeList() {
 
 function renderCQList() {
     const container = document.getElementById('cq-list');
-    document.getElementById('cq-subject-tag').innerText = activeSelectedSubject;
+    const tag = document.getElementById('cq-subject-tag');
+    if (tag) tag.innerText = activeSelectedSubject;
+    if (!container) return;
+
     container.innerHTML = '';
 
     const filtered = activeSelectedSubject === "সকল বিষয়" ? cqData : cqData.filter(x => x.subject === activeSelectedSubject);
@@ -402,9 +426,7 @@ function publishPost() {
         if (!stem || !qaFull) return alert('উদ্দীপক এবং প্রশ্ন উত্তর লিখুন!');
 
         const qaList = qaFull.split('\n\n').filter(x => x.trim() !== '');
-
-        cqData.push({ dept, subject, stem, qaList });
-        localStorage.setItem(APP_KEYS.CQ, JSON.stringify(cqData));
+        db.ref('cq').push({ dept, subject, stem, qaList });
 
     } else if (type === 'knowledge') {
         const fullText = document.getElementById('k-qa-full').value;
@@ -414,14 +436,13 @@ function publishPost() {
         blocks.forEach(block => {
             const lines = block.split('\n');
             if (lines.length >= 2) {
-                knowledgeQuestions.push({
+                db.ref('knowledge').push({
                     dept, subject,
                     q: lines[0],
                     a: lines[1]
                 });
             }
         });
-        localStorage.setItem(APP_KEYS.KNOWLEDGE, JSON.stringify(knowledgeQuestions));
 
     } else if (type === 'mcq') {
         const bulkText = document.getElementById('mcq-bulk-text').value;
@@ -431,7 +452,7 @@ function publishPost() {
         blocks.forEach(block => {
             const lines = block.split('\n').map(l => l.trim()).filter(l => l !== '');
             if (lines.length >= 6) {
-                mcqData.push({
+                db.ref('mcqs').push({
                     dept, subject,
                     question: lines[0],
                     options: [lines[1], lines[2], lines[3], lines[4]],
@@ -439,54 +460,52 @@ function publishPost() {
                 });
             }
         });
-        localStorage.setItem(APP_KEYS.MCQ, JSON.stringify(mcqData));
     }
 
-    alert('🚀 সফলতা সহকারে উপাদান পোস্ট করা হয়েছে!');
-    renderAdminManagePosts();
-    showSection('home');
+    alert('🚀 ক্লাউড ডেটাবেসে সফলভাবে আপলোড করা হয়েছে!');
 }
 
 // ADMIN POST MANAGEMENT & DELETE FUNCTIONALITY
 function renderAdminManagePosts() {
     const container = document.getElementById('admin-posts-container');
+    if (!container) return;
     container.innerHTML = '';
 
     let totalHtml = '<h4>📝 নৈর্ব্যক্তিক (MCQ) প্রশ্নসমূহ</h4>';
     if (mcqData.length === 0) totalHtml += '<p class="text-muted">কোনো নৈর্ব্যক্তিক পোস্ট নেই।</p>';
-    mcqData.forEach((item, index) => {
+    mcqData.forEach((item) => {
         totalHtml += `
             <div class="admin-post-item">
                 <div>
                     <strong>[${item.subject}]</strong> ${item.question}
                 </div>
-                <button class="btn btn-danger" style="font-size:0.8rem; padding:4px 10px;" onclick="deletePost('mcq', ${index})">🗑️ ডিলিট</button>
+                <button class="btn btn-danger" style="font-size:0.8rem; padding:4px 10px;" onclick="deletePost('mcqs', '${item.fbKey}')">🗑️ ডিলিট</button>
             </div>
         `;
     });
 
     totalHtml += '<h4 style="margin-top:20px;">💡 জ্ঞানমূলক প্রশ্নসমূহ</h4>';
     if (knowledgeQuestions.length === 0) totalHtml += '<p class="text-muted">কোনো জ্ঞানমূলক পোস্ট নেই।</p>';
-    knowledgeQuestions.forEach((item, index) => {
+    knowledgeQuestions.forEach((item) => {
         totalHtml += `
             <div class="admin-post-item">
                 <div>
                     <strong>[${item.subject}]</strong> ${item.q}
                 </div>
-                <button class="btn btn-danger" style="font-size:0.8rem; padding:4px 10px;" onclick="deletePost('knowledge', ${index})">🗑️ ডিলিট</button>
+                <button class="btn btn-danger" style="font-size:0.8rem; padding:4px 10px;" onclick="deletePost('knowledge', '${item.fbKey}')">🗑️ ডিলিট</button>
             </div>
         `;
     });
 
     totalHtml += '<h4 style="margin-top:20px;">📄 সৃজনশীল প্রশ্নসমূহ</h4>';
     if (cqData.length === 0) totalHtml += '<p class="text-muted">কোনো সৃজনশীল পোস্ট নেই।</p>';
-    cqData.forEach((item, index) => {
+    cqData.forEach((item) => {
         totalHtml += `
             <div class="admin-post-item">
                 <div>
-                    <strong>[${item.subject}]</strong> ${item.stem.substring(0, 50)}...
+                    <strong>[${item.subject}]</strong> ${item.stem ? item.stem.substring(0, 50) : ''}...
                 </div>
-                <button class="btn btn-danger" style="font-size:0.8rem; padding:4px 10px;" onclick="deletePost('cq', ${index})">🗑️ ডিলিট</button>
+                <button class="btn btn-danger" style="font-size:0.8rem; padding:4px 10px;" onclick="deletePost('cq', '${item.fbKey}')">🗑️ ডিলিট</button>
             </div>
         `;
     });
@@ -494,26 +513,16 @@ function renderAdminManagePosts() {
     container.innerHTML = totalHtml;
 }
 
-function deletePost(type, index) {
+function deletePost(node, fbKey) {
     if (!confirm('আপনি কি নিশ্চিত যে এই পোস্টটি মুছে ফেলতে চান?')) return;
-
-    if (type === 'mcq') {
-        mcqData.splice(index, 1);
-        localStorage.setItem(APP_KEYS.MCQ, JSON.stringify(mcqData));
-    } else if (type === 'knowledge') {
-        knowledgeQuestions.splice(index, 1);
-        localStorage.setItem(APP_KEYS.KNOWLEDGE, JSON.stringify(knowledgeQuestions));
-    } else if (type === 'cq') {
-        cqData.splice(index, 1);
-        localStorage.setItem(APP_KEYS.CQ, JSON.stringify(cqData));
-    }
-
-    renderAdminManagePosts();
-    alert('🗑️ পোস্ট সফলভাবে মুছে ফেলা হয়েছে!');
+    db.ref(`${node}/${fbKey}`).remove()
+        .then(() => alert('🗑️ ডাটাবেস থেকে মুছে ফেলা হয়েছে!'))
+        .catch(err => alert('ভুল হয়েছে: ' + err.message));
 }
 
 function renderStudentTable() {
     const tbody = document.getElementById('students-table-body');
+    if (!tbody) return;
     tbody.innerHTML = '';
     if (registeredStudents.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center">কোনো শিক্ষার্থী এখনও নিবন্ধিত হয়নি।</td></tr>';
